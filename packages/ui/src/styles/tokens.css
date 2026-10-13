@@ -1,0 +1,104 @@
+/*
+ * The Lab design tokens. Written from scratch for this repo; family feel inspired by
+ * the sibling POS app (see docs/DESIGN_NOTES.md), with an industrial/operations identity:
+ * steel neutrals, teal accent, amber for in-progress, dense spacing.
+ */
+:root {
+  /* Type */
+  --font-ui: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', Consolas, 'Courier New', monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --leading-ar: 1.7; /* Arabic needs more room for ascenders/descenders and dots */
+  --leading-latin: 1.45;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 600;
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --sidebar-width: 232px;
+  --topbar-height: 52px;
+  --row-height: 36px;
+
+  --transition-fast: 0.12s ease;
+}
+
+/* Light theme (default) */
+:root,
+[data-theme='light'] {
+  --color-bg-app: #eef1f4;
+  --color-bg-surface: #ffffff;
+  --color-bg-raised: #f6f8fa;
+  --color-bg-hover: #e8edf2;
+  --color-bg-sidebar: #16202c;
+  --color-sidebar-text: #c3ccd6;
+  --color-sidebar-active: #22303f;
+  --color-border: #d6dde5;
+  --color-border-strong: #b8c3cf;
+  --color-text: #15202b;
+  --color-text-muted: #5a6877;
+  --color-accent: #0f8b8d;
+  --color-accent-hover: #0c7375;
+  --color-accent-soft: rgba(15, 139, 141, 0.12);
+  --color-on-accent: #ffffff;
+  --color-success: #13875a;
+  --color-success-soft: rgba(19, 135, 90, 0.12);
+  --color-warning: #b26a00;
+  --color-warning-soft: rgba(217, 132, 0, 0.14);
+  --color-danger: #c62f2f;
+  --color-danger-soft: rgba(198, 47, 47, 0.12);
+  --color-info: #3b5bdb;
+  --color-info-soft: rgba(59, 91, 219, 0.12);
+  --color-neutral-soft: rgba(90, 104, 119, 0.12);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 32, 0.08);
+  --shadow-md: 0 4px 14px rgba(16, 24, 32, 0.12);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --color-bg-app: #0c1218;
+  --color-bg-surface: #131b24;
+  --color-bg-raised: #1a2430;
+  --color-bg-hover: #23303e;
+  --color-bg-sidebar: #0f161e;
+  --color-sidebar-text: #a9b5c2;
+  --color-sidebar-active: #1d2a37;
+  --color-border: #2a3746;
+  --color-border-strong: #3a4a5c;
+  --color-text: #e8edf2;
+  --color-text-muted: #95a3b2;
+  --color-accent: #2bb3b5;
+  --color-accent-hover: #46c7c9;
+  --color-accent-soft: rgba(43, 179, 181, 0.16);
+  --color-on-accent: #061215;
+  --color-success: #34c48b;
+  --color-success-soft: rgba(52, 196, 139, 0.15);
+  --color-warning: #f0a83a;
+  --color-warning-soft: rgba(240, 168, 58, 0.15);
+  --color-danger: #f06464;
+  --color-danger-soft: rgba(240, 100, 100, 0.15);
+  --color-info: #7c96f5;
+  --color-info-soft: rgba(124, 150, 245, 0.16);
+  --color-neutral-soft: rgba(149, 163, 178, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
