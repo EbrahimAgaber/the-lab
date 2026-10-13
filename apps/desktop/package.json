@@ -1,0 +1,12 @@
+{
+  "name": "@the-lab/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "electron . --dev"
+  },
+  "devDependencies": {
+    "electron": "33.2.1"
+  }
+}
