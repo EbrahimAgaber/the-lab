@@ -40,6 +40,24 @@ export class AuditService {
       .run(id, ctx.actorId, entry.action, entry.entityType, entry.entityId, diffJson, now);
   }
 
+  record(entry: {
+    actorId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    diff?: Record<string, unknown>;
+  }): void {
+    this.logAudit(
+      { actorId: entry.actorId },
+      {
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        diff: entry.diff,
+      },
+    );
+  }
+
   emitOutbox(entry: OutboxEntry): void {
     const id = this.ids.next();
     const now = this.clock.now().toISOString();

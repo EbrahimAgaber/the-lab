@@ -1,86 +1,52 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePrefs } from '../i18n/PrefsProvider';
-import { api, type LabPersistentData } from '../api/client';
+import { api, type SetupStateDto, type UserDto } from '../api/client';
 
 export function SettingsPage() {
   const { t, dir } = usePrefs();
   const isRtl = dir === 'rtl';
+
+  const [setupState, setSetupState] = useState<SetupStateDto | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
+  const [capabilities, setCapabilities] = useState<string[]>([]);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [safetyModalOpen, setSafetyModalOpen] = useState(false);
-  const [typedConfirm, setTypedConfirm] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
 
-  const executeWipe = async () => {
-    const validKeyword = isRtl ? 'مسح' : 'WIPE';
-    if (
-      typedConfirm.trim().toUpperCase() !== validKeyword &&
-      typedConfirm.trim() !== 'مسح' &&
-      typedConfirm.trim().toUpperCase() !== 'WIPE'
-    ) {
-      alert(isRtl ? 'يرجى كتابة كلمة التأكيد بشكل صحيح' : 'Please type the confirmation keyword correctly');
-      return;
-    }
-    await api.system.resetToEmpty();
-    setSafetyModalOpen(false);
-    setStatusMsg(
-      isRtl
-        ? 'تم مسح البيانات بنجاح. النظام فارغ وجاهز لبيانات عملك.'
-        : 'All data wiped. System is completely blank and ready for your business data.',
-    );
-    setTimeout(() => window.location.reload(), 1200);
-  };
-
-  const handleResetEmpty = () => {
-    setTypedConfirm('');
-    setSafetyModalOpen(true);
-  };
-
-  const handleSeedDefaults = async () => {
-    if (
-      window.confirm(
-        isRtl
-          ? 'هل تريد تحميل البيانات الإرشادية لقطاعي الأغذية والملبوسات؟'
-          : 'Load Food & Beverage and Textile industrial benchmark data?',
-      )
-    ) {
-      await api.system.seedDefaultData();
-      setStatusMsg(
-        isRtl ? 'تم تحميل البيانات الإرشادية بنجاح.' : 'Benchmark data loaded successfully.',
-      );
-      setTimeout(() => window.location.reload(), 1200);
-    }
-  };
-
-  const handleExport = async () => {
-    const dataObj = await api.system.exportData();
-    const jsonStr = JSON.stringify(dataObj, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `the-lab-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatusMsg(
-      isRtl ? 'تم تصدير النسخة الاحتياطية بنجاح.' : 'Backup JSON exported successfully.',
-    );
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
+  useEffect(() => {
+    async function loadSettings() {
       try {
-        const text = evt.target?.result as string;
-        const parsed = JSON.parse(text) as LabPersistentData;
-        await api.system.importData(parsed);
-        setStatusMsg(isRtl ? 'تم استيراد البيانات بنجاح.' : 'Data imported successfully.');
-        setTimeout(() => window.location.reload(), 1200);
-      } catch {
-        alert(isRtl ? 'ملف النسخة الاحتياطية غير صالح' : 'Invalid backup JSON file');
+        const [state, me] = await Promise.all([
+          api.admin.getSetupState().catch(() => null),
+          api.auth.getMe().catch(() => null),
+        ]);
+        if (state) setSetupState(state);
+        if (me) {
+          setCurrentUser(me.user);
+          setCapabilities(me.capabilities);
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
       }
-    };
-    reader.readAsText(file);
+    }
+    loadSettings();
+  }, []);
+
+  const handleCreateBackup = async () => {
+    setBackingUp(true);
+    setErrorMsg(null);
+    try {
+      const res = await api.admin.createBackup();
+      setStatusMsg(
+        isRtl
+          ? `تم إنشاء نسخة احتياطية آمنة لقاعدة البيانات بنجاح: ${res.backupId}`
+          : `Database backup created successfully: ${res.backupId}`,
+      );
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to create backup');
+    } finally {
+      setBackingUp(false);
+    }
   };
 
   return (
@@ -90,8 +56,8 @@ export function SettingsPage() {
           <h1 className="page-title">{t('nav.settings')}</h1>
           <p className="page-sub">
             {isRtl
-              ? 'إدارة قاعدة البيانات المحلية والنسخ الاحتياطي والبدء من الصفر'
-              : 'Local database management, backup export/import and workspace initialization'}
+              ? 'إدارة إعدادات المنشأة، الصلاحيات، والنسخ الاحتياطي لقاعدة البيانات'
+              : 'Enterprise settings, RBAC capabilities, and database operations'}
           </p>
         </div>
       </div>
@@ -110,6 +76,20 @@ export function SettingsPage() {
         </div>
       )}
 
+      {errorMsg && (
+        <div
+          className="card"
+          style={{
+            padding: 'var(--space-3)',
+            background: 'rgba(239, 68, 68, 0.1)',
+            color: 'var(--color-danger)',
+            fontWeight: 600,
+          }}
+        >
+          {errorMsg}
+        </div>
+      )}
+
       <div
         style={{
           display: 'grid',
@@ -117,10 +97,35 @@ export function SettingsPage() {
           gap: 'var(--space-4)',
         }}
       >
-        {/* Clean Slate & Initialization */}
+        {/* Company Profile Card */}
+        <section className="card" style={{ padding: 'var(--space-4)' }}>
+          <h3 style={{ marginBlockEnd: 'var(--space-3)' }}>
+            {isRtl ? 'بيانات المنشأة والعملة' : 'Company & Currency Profile'}
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: '0.9rem' }}>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'الاسم بالعربية: ' : 'Arabic Name: '}</span>
+              <strong>{setupState?.companyNameAr || (isRtl ? 'المعمل الذكي' : 'The Lab')}</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'الاسم بالإنجليزية: ' : 'English Name: '}</span>
+              <strong>{setupState?.companyNameEn || 'The Lab Manufacturing'}</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'العملة الأساسية: ' : 'Base Currency: '}</span>
+              <strong>{setupState?.baseCurrency || 'SAR'}</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'ضريبة القيمة المضافة: ' : 'VAT Rate: '}</span>
+              <strong>15%</strong>
+            </div>
+          </div>
+        </section>
+
+        {/* Database Backup & Maintenance Card */}
         <section className="card" style={{ padding: 'var(--space-4)' }}>
           <h3 style={{ marginBlockEnd: 'var(--space-2)' }}>
-            {isRtl ? 'تهيئة منصة العمل (Clean Slate)' : 'Workspace Initialization'}
+            {isRtl ? 'النسخ الاحتياطي لقاعدة البيانات' : 'Database Backup & Integrity'}
           </h3>
           <p
             style={{
@@ -130,133 +135,52 @@ export function SettingsPage() {
             }}
           >
             {isRtl
-              ? 'تفريغ كافة السجلات للبدء بقاعدة بيانات حقيقية فارغة تماماً دون أي بيانات تجريبية.'
-              : 'Wipe all records to start with a completely empty, real database with zero demo seed data.'}
+              ? 'إنشاء نسخة نقطية متوافقة مع WAL من قاعدة بيانات SQLite المحلية دون إيقاف العمليات.'
+              : 'Create a WAL-safe online point-in-time snapshot backup of the local SQLite database.'}
           </p>
           <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-danger touch-btn" onClick={handleResetEmpty}>
-              {isRtl ? 'بدء منصة عمل فارغة (صفر بيانات)' : 'Start with Empty Workspace (Zero Data)'}
-            </button>
-            <button type="button" className="btn btn-secondary touch-btn" onClick={handleSeedDefaults}>
-              {isRtl ? 'إعادة تحميل النماذج الإرشادية' : 'Reload Benchmark Samples'}
+            <button
+              type="button"
+              className="btn btn-primary touch-btn"
+              disabled={backingUp}
+              onClick={handleCreateBackup}
+            >
+              {backingUp
+                ? isRtl
+                  ? 'جارٍ النسخ...'
+                  : 'Backing up...'
+                : isRtl
+                  ? 'إنشاء نسخة احتياطية فورية'
+                  : 'Backup Database Now'}
             </button>
           </div>
         </section>
 
-        {/* Backup & Portability */}
-        <section className="card" style={{ padding: 'var(--space-4)' }}>
-          <h3 style={{ marginBlockEnd: 'var(--space-2)' }}>
-            {isRtl ? 'النسخ الاحتياطي والتصدير (Data Portability)' : 'Backup & Data Portability'}
+        {/* Active Session & Security Card */}
+        <section className="card" style={{ padding: 'var(--space-4)', gridColumn: '1 / -1' }}>
+          <h3 style={{ marginBlockEnd: 'var(--space-3)' }}>
+            {isRtl ? 'جلسة المستخدم والصلاحيات (RBAC)' : 'User Session & Active Capabilities'}
           </h3>
-          <p
-            style={{
-              fontSize: '0.85rem',
-              color: 'var(--color-text-muted)',
-              marginBlockEnd: 'var(--space-4)',
-            }}
-          >
-            {isRtl
-              ? 'حفظ أو استعادة كافة الأصناف، الوصفات، حركات المخزون، وأوامر التشغيل كملف JSON مستقل.'
-              : 'Save or restore all items, recipes, stock movements, and work orders as an offline JSON archive.'}
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--space-3)',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
-            <button type="button" className="btn btn-primary touch-btn" onClick={handleExport}>
-              {isRtl ? 'تصدير نسخة احتياطية (JSON)' : 'Export Backup (JSON)'}
-            </button>
-            <label className="btn btn-secondary touch-btn" style={{ cursor: 'pointer', margin: 0, display: 'inline-flex', alignItems: 'center' }}>
-              <span>{isRtl ? 'استيراد نسخة سابقة' : 'Import Backup File'}</span>
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-            </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: '0.9rem' }}>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'المستخدم النشط: ' : 'Active User: '}</span>
+              <strong>{currentUser?.display_name || 'System Administrator'}</strong> ({currentUser?.username || 'admin'})
+            </div>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'الأدوار: ' : 'Roles: '}</span>
+              <span style={{ fontFamily: 'var(--font-mono)' }}>
+                {currentUser?.roles?.join(', ') || 'ADMIN'}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: 'var(--color-text-muted)' }}>{isRtl ? 'الصلاحيات النشطة: ' : 'Active Capabilities: '}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+                {capabilities.length > 0 ? capabilities.join(' | ') : '*:*.* (Full Administrative Access)'}
+              </span>
+            </div>
           </div>
         </section>
       </div>
-
-      {/* Industrial Safety Modal */}
-      {safetyModalOpen && (
-        <div
-          className="modal-backdrop"
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              inlineSize: '420px',
-              padding: 'var(--space-4)',
-              border: '2px solid var(--color-danger)',
-            }}
-          >
-            <h3 style={{ color: 'var(--color-danger)', marginBlockEnd: 'var(--space-2)' }}>
-              {t('modal.confirmTitle')}
-            </h3>
-            <p
-              style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text)',
-                marginBlockEnd: 'var(--space-3)',
-              }}
-            >
-              {t('modal.confirmWipeDesc')}
-            </p>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 'var(--text-xs)',
-                fontWeight: 600,
-                marginBlockEnd: 'var(--space-1)',
-              }}
-            >
-              {t('modal.confirmKeywordPrompt')}
-            </label>
-            <input
-              className="input"
-              type="text"
-              autoFocus
-              placeholder={isRtl ? 'مسح' : 'WIPE'}
-              value={typedConfirm}
-              onChange={(e) => setTypedConfirm(e.target.value)}
-              style={{ inlineSize: '100%', marginBlockEnd: 'var(--space-4)' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-              <button
-                type="button"
-                className="btn touch-btn"
-                onClick={() => setSafetyModalOpen(false)}
-              >
-                {t('dialog.cancel')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger touch-btn"
-                onClick={executeWipe}
-              >
-                {t('action.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

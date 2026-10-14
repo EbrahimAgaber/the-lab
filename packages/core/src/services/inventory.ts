@@ -1,6 +1,7 @@
 import type { SqlDatabase } from '../db';
 import type { Clock, IdGenerator } from '../runtime';
 import { AuditService, type AuditContext } from './audit';
+import type { QcStatus, StockOnHandDto, LotDto } from '@the-lab/contract';
 
 export type MovementType =
   | 'RECEIPT'
@@ -274,6 +275,43 @@ export class InventoryService {
   }
 
   /**
+   * Returns current on-hand inventory grouped by item with lot breakdown.
+   */
+  getStockOnHand(filterItemId?: string): StockOnHandDto[] {
+    const balances = this.listStockBalances();
+    const map = new Map<string, StockOnHandDto>();
+
+    for (const b of balances) {
+      if (filterItemId && b.itemId !== filterItemId) continue;
+
+      let entry = map.get(b.itemId);
+      if (!entry) {
+        entry = {
+          itemId: b.itemId,
+          itemCode: b.itemCode,
+          itemNameAr: b.itemNameAr,
+          itemNameEn: b.itemNameEn,
+          uomCode: b.uomCode,
+          totalQuantityScaled: 0,
+          byLot: [],
+        };
+        map.set(b.itemId, entry);
+      }
+
+      entry.totalQuantityScaled += b.quantityScaled;
+      entry.byLot.push({
+        lotId: b.lotId,
+        lotNumber: b.lotNumber,
+        qcStatus: b.qcStatus as QcStatus,
+        locationId: b.locationId,
+        quantityScaled: b.quantityScaled,
+      });
+    }
+
+    return Array.from(map.values());
+  }
+
+  /**
    * List lots for Quarantine and QC inspection.
    */
   listLots(filterQcStatus?: string): Array<{
@@ -345,9 +383,9 @@ export class InventoryService {
   updateLotQc(
     ctx: AuditContext,
     lotId: string,
-    newStatus: 'RELEASED' | 'REJECTED' | 'QUARANTINE',
+    newStatus: QcStatus,
     notes?: string,
-  ): void {
+  ): LotDto {
     const tx = this.db.transaction(() => {
       const lot = this.db.prepare('SELECT * FROM lots WHERE id = ?').get(lotId) as
         | { id: string; qc_status: string; lot_number: string }
@@ -386,9 +424,20 @@ export class InventoryService {
           inspectorId: ctx.actorId,
         },
       });
+
+      const updated = this.db.prepare('SELECT * FROM lots WHERE id = ?').get(lotId) as Record<string, unknown>;
+      return {
+        id: String(updated.id),
+        lot_number: String(updated.lot_number),
+        item_id: String(updated.item_id),
+        manufacture_date: updated.manufacture_date ? String(updated.manufacture_date) : null,
+        expiry_date: updated.expiry_date ? String(updated.expiry_date) : null,
+        qc_status: updated.qc_status as QcStatus,
+        created_at: String(updated.created_at),
+      };
     });
 
-    tx();
+    return tx();
   }
 
   /**

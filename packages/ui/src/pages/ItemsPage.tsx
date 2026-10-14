@@ -136,15 +136,22 @@ export function ItemsPage() {
     }
   };
 
-  const handleDelete = async (item: ItemDto) => {
-    const confirmMsg = `${t('msg.confirmDelete')} (${isRtl ? item.name_ar : item.name_en})`;
-    if (!window.confirm(confirmMsg)) return;
+  const [deletingItem, setDeletingItem] = useState<ItemDto | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const handleDelete = (item: ItemDto) => {
+    setDeletingItem(item);
+    setDeleteError(null);
+  };
+
+  const executeDelete = async () => {
+    if (!deletingItem) return;
     try {
-      await api.items.delete(item.id);
+      await api.items.delete(deletingItem.id);
+      setDeletingItem(null);
       await loadItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete');
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -570,6 +577,71 @@ export function ItemsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Item Confirmation Modal */}
+      {deletingItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: 'var(--space-4)',
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              inlineSize: '100%',
+              maxInlineSize: 420,
+              padding: 'var(--space-4)',
+              border: '2px solid var(--color-danger)',
+            }}
+          >
+            <h3 style={{ color: 'var(--color-danger)', marginBlockEnd: 'var(--space-2)' }}>
+              {t('modal.confirmTitle')}
+            </h3>
+            <p style={{ fontSize: 'var(--text-sm)', marginBlockEnd: 'var(--space-3)' }}>
+              {t('msg.confirmDelete')} ({isRtl ? deletingItem.name_ar : deletingItem.name_en})
+            </p>
+            {deleteError && (
+              <div
+                style={{
+                  padding: 'var(--space-2)',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  color: 'var(--color-danger)',
+                  fontSize: '0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  marginBlockEnd: 'var(--space-3)',
+                }}
+              >
+                {deleteError}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setDeletingItem(null)}
+              >
+                {t('dialog.cancel')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={executeDelete}
+              >
+                {t('action.delete')}
+              </button>
+            </div>
           </div>
         </div>
       )}

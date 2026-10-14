@@ -25,8 +25,8 @@ describe('WorkOrderService (Manufacturing Lifecycle)', () => {
     runMigrations(db);
 
     // Seed master data
-    db.prepare("INSERT INTO units_of_measure (code, name_ar, name_en, category) VALUES ('KG', 'كجم', 'Kilogram', 'MASS')").run();
-    db.prepare("INSERT INTO units_of_measure (code, name_ar, name_en, category) VALUES ('PCS', 'قطعة', 'Pieces', 'COUNT')").run();
+    db.prepare("INSERT OR IGNORE INTO units_of_measure (code, name_ar, name_en, category) VALUES ('KG', 'كجم', 'Kilogram', 'MASS')").run();
+    db.prepare("INSERT OR IGNORE INTO units_of_measure (code, name_ar, name_en, category) VALUES ('PCS', 'قطعة', 'Pieces', 'COUNT')").run();
 
     // Raw Tomato & Finished Sauce
     db.prepare("INSERT INTO items (id, code, name_ar, name_en, type, uom_code, cost_minor, created_at, updated_at) VALUES ('itm-raw', 'RAW-TOM', 'طماطم', 'Tomato', 'RAW', 'KG', 200, '2026-10-14T00:00:00Z', '2026-10-14T00:00:00Z')").run();
@@ -34,6 +34,7 @@ describe('WorkOrderService (Manufacturing Lifecycle)', () => {
 
     db.prepare("INSERT INTO locations (id, code, name_ar, name_en, type) VALUES ('loc-raw', 'LOC-RAW', 'مستودع المواد الخام', 'Raw Materials', 'WAREHOUSE')").run();
     db.prepare("INSERT INTO locations (id, code, name_ar, name_en, type) VALUES ('loc-fg', 'LOC-FG', 'مستودع المنتجات النهائية', 'Finished Goods', 'WAREHOUSE')").run();
+    db.prepare("INSERT INTO locations (id, code, name_ar, name_en, type) VALUES ('loc-scrap-bay', 'LOC-SCRAP', 'منطقة الهدر', 'Scrap Bay', 'SCRAP')").run();
 
     db.prepare("INSERT INTO lots (id, lot_number, item_id, created_at) VALUES ('lot-raw-1', 'LT-RAW-001', 'itm-raw', '2026-10-14T00:00:00Z')").run();
     db.prepare("INSERT INTO lots (id, lot_number, item_id, created_at) VALUES ('lot-fg-1', 'LT-FG-001', 'itm-fg', '2026-10-14T00:00:00Z')").run();

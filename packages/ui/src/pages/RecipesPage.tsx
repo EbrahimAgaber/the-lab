@@ -333,15 +333,22 @@ export function RecipesPage() {
     }
   };
 
-  const handleDeleteRecipe = async (recipe: RecipeDto) => {
-    const confirmMsg = `${t('msg.confirmDelete')} (${isRtl ? recipe.name_ar : recipe.name_en})`;
-    if (!window.confirm(confirmMsg)) return;
+  const [deletingRecipe, setDeletingRecipe] = useState<RecipeDto | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const handleDeleteRecipe = (recipe: RecipeDto) => {
+    setDeletingRecipe(recipe);
+    setDeleteError(null);
+  };
+
+  const executeDeleteRecipe = async () => {
+    if (!deletingRecipe) return;
     try {
-      await api.recipes.delete(recipe.id);
+      await api.recipes.delete(deletingRecipe.id);
+      setDeletingRecipe(null);
       await loadAll();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete recipe');
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete recipe');
     }
   };
 
@@ -456,10 +463,10 @@ export function RecipesPage() {
           </button>
           <button
             type="button"
-            className={`btn ${verticalFilter === 'TEXTILE' ? 'btn-primary' : ''}`}
-            onClick={() => setVerticalFilter('TEXTILE')}
+            className={`btn ${verticalFilter === 'GENERAL' ? 'btn-primary' : ''}`}
+            onClick={() => setVerticalFilter('GENERAL')}
           >
-            {t('tab.textile')}
+            {t('industry.general')}
           </button>
         </div>
 
@@ -553,7 +560,7 @@ export function RecipesPage() {
                           fontWeight: 600,
                         }}
                       >
-                        {isFood ? 'F&B' : 'TEXTILE'}
+                        {isFood ? 'F&B' : 'GENERAL'}
                       </span>
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
@@ -947,7 +954,6 @@ export function RecipesPage() {
                     style={{ inlineSize: '100%' }}
                   >
                     <option value="FOOD_BEV">{t('industry.food')}</option>
-                    <option value="TEXTILE">{t('industry.textile')}</option>
                     <option value="GENERAL">{t('industry.general')}</option>
                   </select>
                 </div>
@@ -1456,6 +1462,71 @@ export function RecipesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Recipe Confirmation Modal */}
+      {deletingRecipe && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: 'var(--space-4)',
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              inlineSize: '100%',
+              maxInlineSize: 420,
+              padding: 'var(--space-4)',
+              border: '2px solid var(--color-danger)',
+            }}
+          >
+            <h3 style={{ color: 'var(--color-danger)', marginBlockEnd: 'var(--space-2)' }}>
+              {t('modal.confirmTitle')}
+            </h3>
+            <p style={{ fontSize: 'var(--text-sm)', marginBlockEnd: 'var(--space-3)' }}>
+              {t('msg.confirmDelete')} ({isRtl ? deletingRecipe.name_ar : deletingRecipe.name_en})
+            </p>
+            {deleteError && (
+              <div
+                style={{
+                  padding: 'var(--space-2)',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  color: 'var(--color-danger)',
+                  fontSize: '0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  marginBlockEnd: 'var(--space-3)',
+                }}
+              >
+                {deleteError}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setDeletingRecipe(null)}
+              >
+                {t('dialog.cancel')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={executeDeleteRecipe}
+              >
+                {t('action.delete')}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-﻿import Database from 'better-sqlite3';
+import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 import { openDatabase, runMigrations, type SqlDatabase } from '../src';
 
@@ -8,9 +8,9 @@ describe('Database Migrations', () => {
   it('applies initial schema and subsequent migrations idempotently', () => {
     const db = openDatabase({ filename: ':memory:', factory });
 
-    // 1st run should apply 2 migrations (001 initial, 002 bom & costing)
+    // 1st run should apply migrations (001 initial, 002 bom & costing, 003 users security & system)
     const res1 = runMigrations(db);
-    expect(res1.applied).toBe(2);
+    expect(res1.applied).toBe(3);
 
     // Verify core tables exist
     const tables = db

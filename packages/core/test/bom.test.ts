@@ -1,33 +1,17 @@
-﻿import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
-import {
-  openDatabase,
-  runMigrations,
-  seedInitialData,
-  BomService,
-  systemClock,
-  sequentialIds,
-  type SqlDatabase,
-} from '../src';
-
-const factory = (f: string) => new Database(f) as unknown as SqlDatabase;
+import { BomService } from '../src';
+import { createTestDb, seedBenchmarkTestData } from './helpers/test-db';
 
 describe('BomService & Cost Configuration Engine', () => {
-  it('seeds F&B and Textile recipes and calculates unit costs accurately', () => {
-    const db = openDatabase({ filename: ':memory:', factory });
-    runMigrations(db);
-
-    const clock = systemClock;
-    const ids = sequentialIds('seed');
-
-    const seedRes = seedInitialData(db, clock, ids);
-    expect(seedRes.seeded).toBe(true);
+  it('calculates recipe unit costs accurately according to business formulas', () => {
+    const { db, clock, ids } = createTestDb();
+    seedBenchmarkTestData(db);
 
     const bomService = new BomService(db, clock, ids);
 
     // 1. List recipes
     const allRecipes = bomService.listRecipes();
-    expect(allRecipes.length).toBeGreaterThanOrEqual(2);
+    expect(allRecipes.length).toBeGreaterThanOrEqual(1);
 
     // 2. F&B Recipe Cost Calculation
     const foodRecipe = allRecipes.find((r) => r.industry_vertical === 'FOOD_BEV')!;
@@ -51,18 +35,6 @@ describe('BomService & Cost Configuration Engine', () => {
         foodCost.totalMachineOverheadMinor -
         foodCost.byproductCreditMinor,
     );
-
-    // 3. Textile Recipe Cost Calculation
-    const texRecipe = allRecipes.find((r) => r.industry_vertical === 'TEXTILE')!;
-    expect(texRecipe).toBeDefined();
-    expect(texRecipe.code).toBe('BOM-TEX-SHRT-L');
-
-    const texCost = bomService.calculateCost(texRecipe.id);
-    expect(texCost.totalDirectMaterialMinor).toBeGreaterThan(0);
-    expect(texCost.totalDirectLaborMinor).toBeGreaterThan(0);
-    expect(texCost.unitCostMinor).toBeGreaterThan(0);
-    expect(texCost.itemsCost.length).toBe(4);
-    expect(texCost.routingsCost.length).toBe(3);
 
     db.close();
   });

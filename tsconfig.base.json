@@ -9,6 +9,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": {
+      "@the-lab/contract": ["./packages/contract/src/index.ts"],
+      "@the-lab/core": ["./packages/core/src/index.ts"]
+    }
   }
 }

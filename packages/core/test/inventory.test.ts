@@ -23,7 +23,7 @@ describe('InventoryService (Append-Only Ledger)', () => {
     runMigrations(db);
 
     // Seed master data
-    db.prepare("INSERT INTO units_of_measure (code, name_ar, name_en, category) VALUES ('KG', 'كيلوغرام', 'Kilogram', 'MASS')").run();
+    db.prepare("INSERT OR IGNORE INTO units_of_measure (code, name_ar, name_en, category) VALUES ('KG', 'كيلوغرام', 'Kilogram', 'MASS')").run();
     db.prepare("INSERT INTO items (id, code, name_ar, name_en, type, uom_code, cost_minor, reorder_point_scaled, created_at, updated_at) VALUES ('itm-1', 'RAW-TOM-01', 'طماطم', 'Tomato', 'RAW', 'KG', 1000, 500000, '2026-10-14T00:00:00Z', '2026-10-14T00:00:00Z')").run();
     db.prepare("INSERT INTO locations (id, code, name_ar, name_en, type) VALUES ('loc-1', 'WH-MAIN', 'المستودع الرئيسي', 'Main Warehouse', 'WAREHOUSE')").run();
     db.prepare("INSERT INTO lots (id, lot_number, item_id, created_at) VALUES ('lot-1', 'LT-2610-01', 'itm-1', '2026-10-14T00:00:00Z')").run();

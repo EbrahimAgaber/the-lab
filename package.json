@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": [
+    "packages/contract",
     "packages/core",
     "packages/ui",
     "apps/desktop"
@@ -11,7 +12,7 @@
     "test": "npm run lint && npm run check:rtl && npm run typecheck && npm run test:core && npm run test:ui",
     "test:core": "npm run test --workspace=@the-lab/core",
     "test:ui": "npm run test --workspace=@the-lab/ui",
-    "typecheck": "tsc -p packages/core --noEmit && tsc -p packages/ui --noEmit",
+    "typecheck": "tsc -p packages/contract --noEmit && tsc -p packages/core --noEmit && tsc -p packages/ui --noEmit",
     "lint": "eslint .",
     "check:rtl": "node scripts/check-rtl.mjs",
     "format": "prettier --write .",

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePrefs } from './i18n/PrefsProvider';
 import { ROUTE_LABEL, Sidebar, type Route } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -9,6 +9,8 @@ import { QualityPage } from './pages/QualityPage';
 import { StockPage } from './pages/StockPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SetupWizard } from './components/SetupWizard';
+import { api } from './api/client';
 
 function initialRoute(): Route {
   const r = new URLSearchParams(location.search).get('route');
@@ -19,6 +21,24 @@ export function App() {
   const { t } = usePrefs();
   const [route, setRoute] = useState<Route>(initialRoute);
   const [collapsed, setCollapsed] = useState(false);
+  const [isSetupComplete, setIsSetupComplete] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkSetup() {
+      try {
+        const state = await api.admin.getSetupState();
+        setIsSetupComplete(state.isSetupComplete);
+      } catch (e) {
+        console.warn('Failed to query setup state, assuming dev ready:', e);
+        setIsSetupComplete(true);
+      }
+    }
+    checkSetup();
+  }, []);
+
+  if (isSetupComplete === false) {
+    return <SetupWizard onComplete={() => setIsSetupComplete(true)} />;
+  }
 
   return (
     <div className="shell">

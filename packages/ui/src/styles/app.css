@@ -1,4 +1,4 @@
-﻿/* Logical properties only. `npm run check:rtl` fails on physical left/right. */
+/* Logical properties only. `npm run check:rtl` fails on physical left/right. */
 *,
 *::before,
 *::after {
@@ -54,7 +54,7 @@ html[lang='ar'] body {
   flex-shrink: 0;
 }
 
-/* â”€â”€ Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Shell ------------------------------ */
 .shell {
   display: flex;
   block-size: 100%;
@@ -222,7 +222,7 @@ html[lang='ar'] body {
   padding: var(--space-5);
 }
 
-/* â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Page ------------------------------- */
 .page-head {
   display: flex;
   align-items: flex-end;
@@ -262,7 +262,7 @@ html[lang='ar'] body {
   inline-size: 280px;
 }
 
-/* â”€â”€ Dense table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Dense table ------------------------ */
 .table-wrap {
   overflow-x: auto;
 }
@@ -308,7 +308,7 @@ html[lang='ar'] body {
   padding: var(--space-3);
 }
 
-/* â”€â”€ Chips & badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Chips & badges -------------------- */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -358,7 +358,7 @@ html[lang='ar'] body {
   background: var(--color-bg-raised);
 }
 
-/* â”€â”€ Stepper (follows inline direction: RTL runs right-to-left) â”€â”€ */
+/* -- Stepper (follows inline direction: RTL runs right-to-left) -- */
 .stepper {
   display: flex;
   align-items: center;
