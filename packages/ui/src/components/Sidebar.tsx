@@ -1,9 +1,9 @@
-import type { ReactElement } from 'react';
+﻿import type { ReactElement } from 'react';
 import { usePrefs } from '../i18n/PrefsProvider';
 import type { MessageKey } from '../i18n';
 import { IconBox, IconFactory, IconFlask, IconGauge, IconLayers, IconSettings } from './icons';
 
-export type Route = 'dashboard' | 'workOrders' | 'quality' | 'items' | 'stock' | 'settings';
+export type Route = 'dashboard' | 'recipes' | 'workOrders' | 'quality' | 'items' | 'stock' | 'settings';
 
 interface NavItem {
   route: Route;
@@ -16,6 +16,7 @@ const SECTIONS: { label: MessageKey; items: NavItem[] }[] = [
     label: 'nav.section.operations',
     items: [
       { route: 'dashboard', label: 'nav.dashboard', Icon: IconGauge },
+      { route: 'recipes', label: 'nav.recipes', Icon: IconFlask },
       { route: 'workOrders', label: 'nav.workOrders', Icon: IconFactory },
       { route: 'quality', label: 'nav.quality', Icon: IconFlask },
     ],

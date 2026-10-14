@@ -1,4 +1,4 @@
-/*
+﻿/*
  * The Lab design tokens. Written from scratch for this repo; family feel inspired by
  * the sibling POS app (see docs/DESIGN_NOTES.md), with an industrial/operations identity:
  * steel neutrals, teal accent, amber for in-progress, dense spacing.
@@ -36,7 +36,8 @@
   /* Layout */
   --sidebar-width: 232px;
   --topbar-height: 52px;
-  --row-height: 36px;
+  --row-height: 44px;
+  --touch-target-min: 44px;
 
   --transition-fast: 0.12s ease;
 }
@@ -102,3 +103,4 @@
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }
+

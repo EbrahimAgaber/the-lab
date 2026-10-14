@@ -1,4 +1,4 @@
-/* Logical properties only. `npm run check:rtl` fails on physical left/right. */
+﻿/* Logical properties only. `npm run check:rtl` fails on physical left/right. */
 *,
 *::before,
 *::after {
@@ -54,7 +54,7 @@ html[lang='ar'] body {
   flex-shrink: 0;
 }
 
-/* ── Shell ─────────────────────────────── */
+/* â”€â”€ Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .shell {
   display: flex;
   block-size: 100%;
@@ -222,7 +222,7 @@ html[lang='ar'] body {
   padding: var(--space-5);
 }
 
-/* ── Page ─────────────────────────────── */
+/* â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page-head {
   display: flex;
   align-items: flex-end;
@@ -262,7 +262,7 @@ html[lang='ar'] body {
   inline-size: 280px;
 }
 
-/* ── Dense table ─────────────────────────────── */
+/* â”€â”€ Dense table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .table-wrap {
   overflow-x: auto;
 }
@@ -308,7 +308,7 @@ html[lang='ar'] body {
   padding: var(--space-3);
 }
 
-/* ── Chips & badges ─────────────────────────────── */
+/* â”€â”€ Chips & badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -358,7 +358,7 @@ html[lang='ar'] body {
   background: var(--color-bg-raised);
 }
 
-/* ── Stepper (follows inline direction: RTL runs right-to-left) ── */
+/* â”€â”€ Stepper (follows inline direction: RTL runs right-to-left) â”€â”€ */
 .stepper {
   display: flex;
   align-items: center;
@@ -425,4 +425,33 @@ html[lang='ar'] body {
 .placeholder {
   padding: var(--space-8);
   color: var(--color-text-muted);
+}
+
+/* Industrial Shop-Floor Touch Friendly Controls */
+.touch-btn {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding-inline: var(--space-4);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  border-radius: var(--radius-md);
+}
+
+.kiosk-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.setup-wizard-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-accent-soft), var(--color-bg-surface));
+  border: 1px solid var(--color-accent);
+  margin-block-end: var(--space-4);
 }
